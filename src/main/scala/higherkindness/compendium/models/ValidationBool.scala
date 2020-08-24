@@ -14,26 +14,6 @@
  * limitations under the License.
  */
 
-package higherkindness.compendium
+package higherkindness.compendium.models
 
-import cats.effect._
-import fs2.Stream
-import higherkindness.compendium.models.config._
-import org.http4s._
-import org.http4s.implicits._
-import org.http4s.server.blaze.BlazeServerBuilder
-
-object CompendiumServerStream {
-
-  private val ec = scala.concurrent.ExecutionContext.global
-
-  def serverStream[F[_]: ConcurrentEffect: Timer](
-      httpConf: HttpConfig,
-      service: HttpRoutes[F]
-  ): Stream[F, ExitCode] =
-    BlazeServerBuilder[F](ec)
-      .bindHttp(httpConf.port, httpConf.host)
-      .withHttpApp(service.orNotFound)
-      .serve
-
-}
+final case class ValidationBool(value: Boolean) extends AnyVal

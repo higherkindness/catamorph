@@ -21,7 +21,7 @@ import cats.effect.Sync
 import cats.implicits._
 import higherkindness.compendium.core.CompendiumService
 import higherkindness.compendium.core.refinements._
-import higherkindness.compendium.http.QueryParams.{IdlNameParam, ProtoVersion, TargetParam}
+import higherkindness.compendium.http.QueryParams._
 import higherkindness.compendium.models._
 import org.http4s.circe.CirceEntityCodec._
 import org.http4s.dsl.Http4sDsl
@@ -47,12 +47,14 @@ object RootService {
       }
 
     val routes = HttpRoutes.of[F] {
-      case req @ POST -> Root / "protocol" / id :? IdlNameParam(idlNameValidated) =>
+      case req @ POST -> Root / "protocol" / id :? IdlNameParam(
+            idlNameValidated
+          ) +& ValidationParam(validBool) =>
         for {
           protocolId <- ProtocolId.parseOrRaise(id)
           idlName    <- idlValidation(idlNameValidated)
           protocol   <- req.as[Protocol]
-          version    <- CompendiumService[F].storeProtocol(protocolId, protocol, idlName)
+          version    <- CompendiumService[F].storeProtocol(protocolId, protocol, idlName, validBool)
           response   <- Created(version.value)
         } yield response.putHeaders(Location(req.uri.withPath(s"${req.uri.path}")))
 
